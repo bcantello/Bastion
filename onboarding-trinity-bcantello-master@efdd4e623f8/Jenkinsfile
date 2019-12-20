@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    options {
+        timeout(10)
+    }
+
+    stages {
+        stage('front end') {
+            steps{
+                // If you start with angular-seed, this set of commands should run all of your tests
+                sh '''#!/bin/bash
+
+                source  ~/.nvm/nvm.sh
+                nvm install
+                npm install
+                xvfb-run -a npm run test:ci
+                '''
+            }
+        }
+        stage('assemble test') {
+            steps {
+                catchError {
+                    sh './gradlew build'
+                }
+                junit 'build/test-results/test/TEST-*.xml'
+                archiveArtifacts 'build/distributions/*.tar'
+            }
+        }
+    }
+}
